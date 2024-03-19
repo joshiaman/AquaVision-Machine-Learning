@@ -17,7 +17,7 @@ species_mapping = {
     6: 'Whitefish'
 }
 
-@app.route('/index')
+@app.route('/')
 def index():
     return render_template('fish.html')
 
