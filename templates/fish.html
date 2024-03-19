@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaVision</title>
+    <style>
+        /* Reset default margin and padding */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            overflow: hidden; /* Prevent scrollbars */
+            position: relative; /* Relative positioning for absolute positioning inside */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            object-fit: cover; /* Ensure video covers entire container */
+        }
+
+        .login-container {
+            background-color: rgba(0, 0, 0, 0.75); /* Semi-transparent black background */
+            padding: 20px;
+            border-radius: 10px;
+            color: #fff; /* Text color */
+            z-index: 1;
+            width: 90%; /* Set width of login container */
+            max-width: 400px; /* Set maximum width to prevent overflowing */
+        }
+
+        .login-container h1 {
+            margin-bottom: 20px;
+            text-align: center; /* Center align heading */
+        }
+
+        .login-container input[type="text"] {
+            padding: 10px;
+            margin-bottom: 10px;
+            width: calc(100% - 20px); /* Take up 100% width minus padding */
+            border: none; /* Remove border */
+            border-bottom: 1px solid #ccc; /* Add bottom border */
+            background: transparent; /* Make background transparent */
+            color: #fff; /* Text color */
+        }
+
+        .login-container button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            width: 100%; /* Button takes up full width */
+        }
+
+        .login-container button:hover {
+            background-color: #0056b3;
+        }
+
+        #result {
+            margin-top: 20px;
+        }
+
+        /* Media query for adjusting container width based on screen size */
+        @media screen and (min-width: 768px) {
+            .login-container {
+                width: 70%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Video Background -->
+    <video class="video-background" autoplay muted loop>
+        <source src="{{ url_for('static', filename='videos/fish_vid.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Login Container -->
+    <div class="login-container">
+        <h1>Aqua Vision</h1>
+        <form id="fishForm">
+            <label for="weight">Weight:</label><br>
+            <input type="text" id="weight" name="weight" required><br>
+            <label for="length1">Length1:</label><br>
+            <input type="text" id="length1" name="length1" required><br>
+            <label for="length2">Length2:</label><br>
+            <input type="text" id="length2" name="length2" required><br>
+            <label for="length3">Length3:</label><br>
+            <input type="text" id="length3" name="length3" required><br>
+            <label for="height">Height:</label><br>
+            <input type="text" id="height" name="height" required><br>
+            <label for="width">Width:</label><br>
+            <input type="text" id="width" name="width" required><br>
+            <button type="button" onclick="predictSpecies()">Predict Species</button>
+        </form>
+        <p id="result"></p>
+    </div>
+
+    <script>
+        function predictSpecies() {
+            var weight = parseFloat(document.getElementById('weight').value);
+            var length1 = parseFloat(document.getElementById('length1').value);
+            var length2 = parseFloat(document.getElementById('length2').value);
+            var length3 = parseFloat(document.getElementById('length3').value);
+            var height = parseFloat(document.getElementById('height').value);
+            var width = parseFloat(document.getElementById('width').value);
+            
+            // AJAX request to server for prediction
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/predict', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.species) {
+                        document.getElementById('result').innerHTML = 'Predicted Species: ' + response.species;
+                        
+                        // Clear the result and form after 5 seconds
+                        setTimeout(function() {
+                            document.getElementById('result').innerHTML = '';
+                            document.getElementById('fishForm').reset();
+                        }, 5000);
+                    } else {
+                        document.getElementById('result').innerHTML = 'Error: Species not found';
+                    }
+                } else {
+                    document.getElementById('result').innerHTML = 'Error: ' + xhr.statusText;
+                }
+            };
+            xhr.send(JSON.stringify({
+                weight: weight,
+                length1: length1,
+                length2: length2,
+                length3: length3,
+                height: height,
+                width: width
+            }));
+        }
+    </script>
+</body>
+</html>
